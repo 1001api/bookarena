@@ -12,14 +12,15 @@ import (
 )
 
 type Booking struct {
-	ID        uuid.UUID          `db:"id" json:"id"`
-	UserID    uuid.UUID          `db:"user_id" json:"user_id"`
-	FieldID   uuid.UUID          `db:"field_id" json:"field_id"`
-	StartTime time.Time          `db:"start_time" json:"start_time"`
-	EndTime   time.Time          `db:"end_time" json:"end_time"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	ID         uuid.UUID          `db:"id" json:"id"`
+	UserID     uuid.UUID          `db:"user_id" json:"user_id"`
+	FieldID    uuid.UUID          `db:"field_id" json:"field_id"`
+	StartTime  time.Time          `db:"start_time" json:"start_time"`
+	EndTime    time.Time          `db:"end_time" json:"end_time"`
+	TotalPrice int64              `db:"total_price" json:"total_price"`
+	CreatedAt  pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
 type Field struct {

@@ -40,22 +40,25 @@ INSERT INTO bookings (
     user_id, 
     field_id, 
     start_time, 
-    end_time
+    end_time,
+    total_price
 )
 VALUES (
     $1, 
     $2, 
     $3, 
-    $4
+    $4,
+    $5
 )
 RETURNING id
 `
 
 type CreateBookingParams struct {
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	FieldID   uuid.UUID `db:"field_id" json:"field_id"`
-	StartTime time.Time `db:"start_time" json:"start_time"`
-	EndTime   time.Time `db:"end_time" json:"end_time"`
+	UserID     uuid.UUID `db:"user_id" json:"user_id"`
+	FieldID    uuid.UUID `db:"field_id" json:"field_id"`
+	StartTime  time.Time `db:"start_time" json:"start_time"`
+	EndTime    time.Time `db:"end_time" json:"end_time"`
+	TotalPrice int64     `db:"total_price" json:"total_price"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (uuid.UUID, error) {
@@ -64,6 +67,7 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (u
 		arg.FieldID,
 		arg.StartTime,
 		arg.EndTime,
+		arg.TotalPrice,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -90,6 +94,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,
@@ -113,6 +118,7 @@ type GetBookingByIDRow struct {
 	FieldID           uuid.UUID          `db:"field_id" json:"field_id"`
 	StartTime         time.Time          `db:"start_time" json:"start_time"`
 	EndTime           time.Time          `db:"end_time" json:"end_time"`
+	TotalPrice        int64              `db:"total_price" json:"total_price"`
 	CreatedAt         pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt         pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
@@ -135,6 +141,7 @@ func (q *Queries) GetBookingByID(ctx context.Context, id uuid.UUID) (GetBookingB
 		&i.FieldID,
 		&i.StartTime,
 		&i.EndTime,
+		&i.TotalPrice,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -157,6 +164,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,
@@ -187,6 +195,7 @@ type ListBookingsRow struct {
 	FieldID           uuid.UUID          `db:"field_id" json:"field_id"`
 	StartTime         time.Time          `db:"start_time" json:"start_time"`
 	EndTime           time.Time          `db:"end_time" json:"end_time"`
+	TotalPrice        int64              `db:"total_price" json:"total_price"`
 	CreatedAt         pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt         pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
@@ -215,6 +224,7 @@ func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]L
 			&i.FieldID,
 			&i.StartTime,
 			&i.EndTime,
+			&i.TotalPrice,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -244,6 +254,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,
@@ -275,6 +286,7 @@ type ListBookingsByFieldRow struct {
 	FieldID           uuid.UUID          `db:"field_id" json:"field_id"`
 	StartTime         time.Time          `db:"start_time" json:"start_time"`
 	EndTime           time.Time          `db:"end_time" json:"end_time"`
+	TotalPrice        int64              `db:"total_price" json:"total_price"`
 	CreatedAt         pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt         pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
@@ -303,6 +315,7 @@ func (q *Queries) ListBookingsByField(ctx context.Context, arg ListBookingsByFie
 			&i.FieldID,
 			&i.StartTime,
 			&i.EndTime,
+			&i.TotalPrice,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -332,6 +345,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     f.name AS field_name,
     f.type AS field_type,
     f.location AS field_location,
@@ -359,6 +373,7 @@ type ListBookingsByUserRow struct {
 	FieldID           uuid.UUID          `db:"field_id" json:"field_id"`
 	StartTime         time.Time          `db:"start_time" json:"start_time"`
 	EndTime           time.Time          `db:"end_time" json:"end_time"`
+	TotalPrice        int64              `db:"total_price" json:"total_price"`
 	FieldName         pgtype.Text        `db:"field_name" json:"field_name"`
 	FieldType         pgtype.Text        `db:"field_type" json:"field_type"`
 	FieldLocation     pgtype.Text        `db:"field_location" json:"field_location"`
@@ -384,6 +399,7 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, arg ListBookingsByUser
 			&i.FieldID,
 			&i.StartTime,
 			&i.EndTime,
+			&i.TotalPrice,
 			&i.FieldName,
 			&i.FieldType,
 			&i.FieldLocation,

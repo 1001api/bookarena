@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 	start_time TIMESTAMPTZ NOT NULL,
 	end_time TIMESTAMPTZ NOT NULL,
+	total_price BIGINT NOT NULL,
 
 	created_at TIMESTAMPTZ DEFAULT NOW(),
 	updated_at TIMESTAMPTZ,

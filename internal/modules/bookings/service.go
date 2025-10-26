@@ -2,9 +2,11 @@ package bookings
 
 import (
 	db "1001api/bookarena/internal/database/generated"
+	"1001api/bookarena/internal/modules/fields"
 	"1001api/bookarena/pkg"
 	"encoding/hex"
 	"errors"
+	"math"
 	"strings"
 	"time"
 
@@ -24,29 +26,64 @@ type BookingService interface {
 }
 
 type service struct {
-	repo   BookingRepository
-	encKey string
+	fieldService fields.FieldService
+	repo         BookingRepository
+	encKey       string
 }
 
-func NewBookingService(repo BookingRepository) BookingService {
+func NewBookingService(fieldService fields.FieldService, repo BookingRepository) BookingService {
 	return &service{
-		repo:   repo,
-		encKey: viper.GetString("ENC_KEY"),
+		fieldService: fieldService,
+		repo:         repo,
+		encKey:       viper.GetString("ENC_KEY"),
 	}
 }
 
 func (s *service) CreateBooking(userID uuid.UUID, req CreateBookingRequest) (uuid.UUID, error) {
+	// check if time is valid
+	if req.StartTime.Before(time.Now()) {
+		return uuid.UUID{}, errors.New("start time must be in the future")
+	}
+
+	if req.EndTime.Before(req.StartTime) {
+		return uuid.UUID{}, errors.New("end time must be after start time")
+	}
+
 	// Check for booking conflict for current timeframe
-	if _, err := s.CheckBookingConflict(req.FieldID, req.StartTime, req.EndTime); err != nil {
+	conflict, err := s.CheckBookingConflict(req.FieldID, req.StartTime, req.EndTime)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to check booking conflict")
 		return uuid.UUID{}, err
 	}
 
-	input := db.CreateBookingParams{
-		UserID:    userID,
-		FieldID:   req.FieldID,
-		StartTime: req.StartTime,
-		EndTime:   req.EndTime,
+	if conflict {
+		return uuid.UUID{}, errors.New("booking conflict")
 	}
+
+	// Check if field exists
+	field, err := s.fieldService.GetFieldByID(req.FieldID)
+	if err != nil {
+		return uuid.UUID{}, errors.New("no rows in result set")
+	}
+
+	// calculate total price per hour
+	totalHour := req.EndTime.Sub(req.StartTime).Hours()
+	pricePerHour := field.PricePerHour
+
+	// round total hour up to nearest integer
+	// this to ensure that if the total hour is less than 1, it will be rounded up to 1
+	totalHour = math.Ceil(totalHour)
+
+	totalPrice := int64(totalHour * float64(pricePerHour))
+
+	input := db.CreateBookingParams{
+		UserID:     userID,
+		FieldID:    req.FieldID,
+		StartTime:  req.StartTime,
+		EndTime:    req.EndTime,
+		TotalPrice: totalPrice,
+	}
+
 	return s.repo.CreateBooking(input)
 }
 

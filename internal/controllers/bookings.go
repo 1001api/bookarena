@@ -67,10 +67,21 @@ func (c *BookingController) CreateBooking(ctx *fiber.Ctx) error {
 
 	createdID, err := c.bookingService.CreateBooking(uid, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return ctx.Status(fiber.StatusNotFound).JSON(
+				fiber.Map{
+					"error": "field not found",
+					"meta": fiber.Map{
+						"duration": time.Since(startTime).String(),
+					},
+				},
+			)
+		}
+
 		if strings.Contains(err.Error(), "booking conflict") {
 			return ctx.Status(fiber.StatusConflict).JSON(
 				fiber.Map{
-					"error": "Booking conflict with already existing booking",
+					"error": "Booking conflict with already existing booking, please choose another timeframe",
 					"meta": fiber.Map{
 						"duration": time.Since(startTime).String(),
 					},

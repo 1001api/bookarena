@@ -3,13 +3,15 @@ INSERT INTO bookings (
     user_id, 
     field_id, 
     start_time, 
-    end_time
+    end_time,
+    total_price
 )
 VALUES (
     @user_id, 
     @field_id, 
     @start_time, 
-    @end_time
+    @end_time,
+    @total_price
 )
 RETURNING id;
 
@@ -20,6 +22,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,
@@ -43,6 +46,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,
@@ -68,6 +72,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     f.name AS field_name,
     f.type AS field_type,
     f.location AS field_location,
@@ -89,6 +94,7 @@ SELECT
     b.field_id,
     b.start_time,
     b.end_time,
+    b.total_price,
     b.created_at,
     b.updated_at,
     b.deleted_at,

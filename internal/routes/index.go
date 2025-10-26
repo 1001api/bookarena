@@ -32,7 +32,7 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 	userService := users.NewUserService(userRepo, encKey)
 	authService := auth.NewAuthService(userService, encKey)
 	fieldService := fields.NewFieldService(fieldRepo)
-	bookingService := bookings.NewBookingService(bookingRepo)
+	bookingService := bookings.NewBookingService(fieldService, bookingRepo)
 
 	userController := controllers.NewUserController(userService, validator)
 	authController := controllers.NewAuthController(authService, validator)
