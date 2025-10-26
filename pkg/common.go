@@ -13,7 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -208,4 +211,12 @@ func MaskEmail(email string) string {
 	maskedPart := strings.Repeat("*", maskedLength)
 
 	return firstThree + maskedPart + "@" + domain
+}
+
+func Render(c *fiber.Ctx, component templ.Component, options ...func(*templ.ComponentHandler)) error {
+	componentHandler := templ.Handler(component)
+	for _, o := range options {
+		o(componentHandler)
+	}
+	return adaptor.HTTPHandler(componentHandler)(c)
 }

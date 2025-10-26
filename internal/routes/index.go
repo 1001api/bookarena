@@ -42,6 +42,7 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 	fieldController := controllers.NewFieldController(fieldService, validator)
 	bookingController := controllers.NewBookingController(bookingService, validator)
 	paymentController := controllers.NewPaymentController(paymentService, validator)
+	webController := controllers.NewWebController()
 
 	// Initialize root user
 	if err := userService.InitializeRootUser(); err != nil {
@@ -98,6 +99,12 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 
 		// DUMMY ENDPOINT TO PAYMENT
 		paymentRoutes.Post("/pay", paymentController.PayDummyPayment)
+	}
+
+	webRoutes := r.Group("/")
+	{
+		webRoutes.Get("/login", webController.LoginPage)
+		webRoutes.Get("/register", webController.RegisterPage)
 	}
 }
 
