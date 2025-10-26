@@ -44,6 +44,7 @@ func (c *BookingController) CreateBooking(ctx *fiber.Ctx) error {
 
 	var req bookings.CreateBookingRequest
 	if err := ctx.BodyParser(&req); err != nil {
+		log.Error().Err(err).Msg("failed to parse json body")
 		return ctx.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
 				"error": "invalid json body",
@@ -92,7 +93,7 @@ func (c *BookingController) CreateBooking(ctx *fiber.Ctx) error {
 		log.Error().Err(err).Msg("failed to create booking")
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			fiber.Map{
-				"error": "failed to create booking",
+				"error": err.Error(),
 				"meta": fiber.Map{
 					"duration": time.Since(startTime).String(),
 				},

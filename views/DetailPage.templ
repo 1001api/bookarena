@@ -1,0 +1,212 @@
+package views
+
+templ DetailPage() {
+	@Layout("Field Detail") {
+		<body class="bg-gray-900 text-gray-100 min-h-screen py-10">
+			<div x-data="fieldPage()" class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<!-- LEFT: Field Info & Booking Form -->
+				<div class="lg:col-span-2 space-y-6">
+					<!-- Loading -->
+					<div x-show="loading" class="flex justify-center py-20">
+						<svg class="w-8 h-8 animate-spin text-blue-600" viewBox="0 0 100 101">
+							<path d="M100 50.5908C100 78.2051..." fill="currentColor"></path>
+							<path d="M93.9676 39.0409C96.393 38.4038..." fill="currentFill"></path>
+						</svg>
+					</div>
+					<!-- Field Details -->
+					<template x-if="!loading && field">
+						<div class="bg-gray-800 border border-gray-700 rounded-2xl shadow p-6">
+							<img
+								:src="field.image_url || '/placeholder.png'"
+								alt="Field Image"
+								class="w-full h-52 object-cover rounded-xl mb-4"
+							/>
+							<h1 class="text-2xl font-semibold mb-1" x-text="field.name"></h1>
+							<p class="text-sm text-gray-400 mb-3" x-text="field.type"></p>
+							<p class="text-blue-500 font-medium mb-2">
+								Rp <span x-text="field.price_per_hour?.toLocaleString('id-ID')"></span> / jam
+							</p>
+							<p class="text-gray-400 text-sm mb-2" x-text="field.description || 'No description available.'"></p>
+							<template x-if="field.location">
+								<p class="text-gray-400 text-sm">📍 <span x-text="field.location"></span></p>
+							</template>
+						</div>
+					</template>
+					<!-- Booking Form -->
+					<template x-if="!loading && field">
+						<div class="bg-gray-800 border border-gray-700 rounded-2xl shadow p-6">
+							<h2 class="text-xl font-semibold mb-4">Book This Field</h2>
+							<form @submit.prevent="bookField" class="space-y-4">
+								<div>
+									<label class="text-sm font-medium mb-1 block text-gray-300">Start Time</label>
+									<input
+										type="datetime-local"
+										x-model="startTime"
+										class="p-3 w-full rounded-lg text-gray-200 bg-gray-900 border border-gray-700 focus:ring-blue-500 focus:border-blue-500"
+										required
+									/>
+								</div>
+								<div>
+									<label class="text-sm font-medium mb-1 block text-gray-300">End Time</label>
+									<input
+										type="datetime-local"
+										x-model="endTime"
+										class="p-3 w-full rounded-lg text-gray-200 bg-gray-900 border border-gray-700 focus:ring-blue-500 focus:border-blue-500"
+										required
+									/>
+								</div>
+								<button
+									type="submit"
+									class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+									:disabled="bookingLoading"
+								>
+									<span x-show="!bookingLoading">Book Now</span>
+									<span x-show="bookingLoading">Processing...</span>
+								</button>
+								<template x-if="message">
+									<p
+										class="text-center mt-2 text-sm"
+										:class="success ? 'text-green-500' : 'text-red-500'"
+										x-text="message"
+									></p>
+								</template>
+							</form>
+						</div>
+					</template>
+				</div>
+				<!-- RIGHT: Bookings List -->
+				<div class="space-y-4">
+					<h2 class="text-xl font-semibold mb-2">Current Bookings</h2>
+					<template x-if="loadingBookings">
+						<div class="flex justify-center py-10">
+							<svg class="w-6 h-6 animate-spin text-blue-600" viewBox="0 0 100 101">
+								<path d="M100 50.5908C100 78.2051..." fill="currentColor"></path>
+								<path d="M93.9676 39.0409C96.393 38.4038..." fill="currentFill"></path>
+							</svg>
+						</div>
+					</template>
+					<template x-if="!loadingBookings && bookings.length > 0">
+						<div class="space-y-3 max-h-[480px] overflow-y-auto">
+							<template x-for="b in bookings" :key="b.id">
+								<div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+									<p class="text-sm font-medium text-blue-400" x-text="b.user_username"></p>
+									<p class="text-gray-300 text-sm mt-1">
+										<span x-text="formatDate(b.start_time)"></span>
+										–
+										<span x-text="formatDate(b.end_time)"></span>
+									</p>
+									<p class="text-gray-400 text-xs mt-1">Status: <span x-text="b.invoice_status"></span></p>
+									<p class="text-gray-400 text-xs">Total: Rp <span x-text="b.total_price.toLocaleString('id-ID')"></span></p>
+								</div>
+							</template>
+						</div>
+					</template>
+					<template x-if="!loadingBookings && bookings.length === 0">
+						<p class="text-gray-500 text-sm text-center">No bookings yet.</p>
+					</template>
+				</div>
+			</div>
+			<script>
+			document.addEventListener("alpine:init", () => {
+				Alpine.data("fieldPage", () => ({
+					field: null,
+					bookings: [],
+					loading: true,
+					loadingBookings: true,
+					bookingLoading: false,
+					startTime: "",
+					endTime: "",
+					message: "",
+					success: false,
+
+					toRFC3339(datetime) {
+						const date = new Date(datetime);
+						return date.toISOString();
+					},
+
+					formatDate(str) {
+						return new Date(str).toLocaleString("id-ID", {
+							dateStyle: "short",
+							timeStyle: "short",
+						});
+					},
+
+					async init() {
+						const id = window.location.pathname.split("/").pop();
+
+						try {
+							const res = await fetch(`/api/v1/fields/${id}`, { 
+                                credentials: "include"
+                            });
+
+							const data = await res.json();
+
+							if (res.ok && data.data) this.field = data.data;
+
+							else if (res.status === 401) window.location.href = "/login";
+						} catch (err) {
+							console.error("Field fetch error:", err);
+						} finally {
+							this.loading = false;
+						}
+
+						// Load bookings
+						try {
+							const res = await fetch(`/api/v1/bookings/field/${id}`, { 
+                                credentials: "include"
+                            });
+
+							const data = await res.json();
+
+							if (res.ok && data.data) this.bookings = data.data;
+						} catch (err) {
+							console.error("Booking list error:", err);
+						} finally {
+							this.loadingBookings = false;
+						}
+					},
+
+					async bookField() {
+						if (!this.field?.id) return;
+
+						this.bookingLoading = true;
+						this.message = "";
+						this.success = false;
+
+						try {
+							const res = await fetch("/api/v1/bookings/create", {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									field_id: this.field.id,
+									start_time: this.toRFC3339(this.startTime),
+									end_time: this.toRFC3339(this.endTime),
+								}),
+								credentials: "include",
+							});
+							const data = await res.json();
+
+							if (res.ok) {
+								this.success = true;
+								this.message = "Booking created successfully!";
+								this.startTime = "";
+								this.endTime = "";
+
+								// Refresh booking list
+								this.init();
+							} else {
+								this.message = data.error || "Failed to create booking.";
+							}
+						} catch (err) {
+							console.error("Booking error:", err);
+							this.message = "Something went wrong.";
+						} finally {
+							this.bookingLoading = false;
+						}
+					},
+				}));
+			});
+			</script>
+		</body>
+	}
+}

@@ -103,6 +103,8 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 
 	webRoutes := r.Group("/")
 	{
+		webRoutes.Get("/", webController.DashboardPage)
+		webRoutes.Get("/d/:id", webController.DetailPage)
 		webRoutes.Get("/login", webController.LoginPage)
 		webRoutes.Get("/register", webController.RegisterPage)
 	}

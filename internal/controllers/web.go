@@ -20,3 +20,11 @@ func (c *WebController) LoginPage(ctx *fiber.Ctx) error {
 func (c *WebController) RegisterPage(ctx *fiber.Ctx) error {
 	return pkg.Render(ctx, views.RegisterPage())
 }
+
+func (c *WebController) DashboardPage(ctx *fiber.Ctx) error {
+	return pkg.Render(ctx, views.DashboardPage())
+}
+
+func (c *WebController) DetailPage(ctx *fiber.Ctx) error {
+	return pkg.Render(ctx, views.DetailPage())
+}

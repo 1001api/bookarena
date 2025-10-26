@@ -139,7 +139,7 @@ templ LoginPage() {
                             
                             if (response.ok) {
                                 this.message = "User logged in successfully, redirecting to dashboard page...";
-                                setTimeout(() =>  window.location.href = "/dashboard", 1000);
+                                setTimeout(() =>  window.location.href = "/", 1000);
                             } else {
                                 this.error = data.error;
                             }
