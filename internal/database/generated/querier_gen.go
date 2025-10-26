@@ -11,18 +11,25 @@ import (
 )
 
 type Querier interface {
+	CheckBookingConflict(ctx context.Context, arg CheckBookingConflictParams) (bool, error)
 	CheckUserExists(ctx context.Context, arg CheckUserExistsParams) (bool, error)
 	CheckUserExistsByID(ctx context.Context, id uuid.UUID) (bool, error)
+	CreateBooking(ctx context.Context, arg CreateBookingParams) (uuid.UUID, error)
 	CreateField(ctx context.Context, arg CreateFieldParams) (uuid.UUID, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error)
+	DeleteBooking(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteField(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	GetBookingByID(ctx context.Context, id uuid.UUID) (GetBookingByIDRow, error)
 	GetFieldByID(ctx context.Context, id uuid.UUID) (GetFieldByIDRow, error)
 	GetUserByEmail(ctx context.Context, emailHash string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByIdentifier(ctx context.Context, arg GetUserByIdentifierParams) (GetUserByIdentifierRow, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error)
 	IncrementFailedLoginCount(ctx context.Context, id uuid.UUID) error
+	ListBookings(ctx context.Context, arg ListBookingsParams) ([]ListBookingsRow, error)
+	ListBookingsByField(ctx context.Context, arg ListBookingsByFieldParams) ([]ListBookingsByFieldRow, error)
+	ListBookingsByUser(ctx context.Context, arg ListBookingsByUserParams) ([]ListBookingsByUserRow, error)
 	ListFields(ctx context.Context, arg ListFieldsParams) ([]ListFieldsRow, error)
 	LockUser(ctx context.Context, arg LockUserParams) error
 	ResetFailedLoginCount(ctx context.Context, id uuid.UUID) error
