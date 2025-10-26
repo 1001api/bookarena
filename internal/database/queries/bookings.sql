@@ -32,11 +32,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.id = @id::uuid AND b.deleted_at IS NULL;
 
 -- name: ListBookings :many
@@ -56,11 +59,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT @limit_count OFFSET @offset_count;
@@ -79,10 +85,13 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     b.created_at,
     b.updated_at
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.user_id = @user_id::uuid AND b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT @limit_count OFFSET @offset_count;
@@ -104,11 +113,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.field_id = @field_uuid::uuid AND b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT @limit_count OFFSET @offset_count;

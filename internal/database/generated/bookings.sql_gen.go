@@ -104,11 +104,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.id = $1::uuid AND b.deleted_at IS NULL
 `
 
@@ -128,6 +131,8 @@ type GetBookingByIDRow struct {
 	FieldLocationLat  pgtype.Float8      `db:"field_location_lat" json:"field_location_lat"`
 	FieldLocationLon  pgtype.Float8      `db:"field_location_lon" json:"field_location_lon"`
 	FieldPricePerHour pgtype.Int8        `db:"field_price_per_hour" json:"field_price_per_hour"`
+	InvoiceID         pgtype.UUID        `db:"invoice_id" json:"invoice_id"`
+	InvoiceStatus     pgtype.Text        `db:"invoice_status" json:"invoice_status"`
 	UserUsername      pgtype.Text        `db:"user_username" json:"user_username"`
 	UserEmail         string             `db:"user_email" json:"user_email"`
 }
@@ -151,6 +156,8 @@ func (q *Queries) GetBookingByID(ctx context.Context, id uuid.UUID) (GetBookingB
 		&i.FieldLocationLat,
 		&i.FieldLocationLon,
 		&i.FieldPricePerHour,
+		&i.InvoiceID,
+		&i.InvoiceStatus,
 		&i.UserUsername,
 		&i.UserEmail,
 	)
@@ -174,11 +181,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT $2 OFFSET $1
@@ -205,6 +215,8 @@ type ListBookingsRow struct {
 	FieldLocationLat  pgtype.Float8      `db:"field_location_lat" json:"field_location_lat"`
 	FieldLocationLon  pgtype.Float8      `db:"field_location_lon" json:"field_location_lon"`
 	FieldPricePerHour pgtype.Int8        `db:"field_price_per_hour" json:"field_price_per_hour"`
+	InvoiceID         pgtype.UUID        `db:"invoice_id" json:"invoice_id"`
+	InvoiceStatus     pgtype.Text        `db:"invoice_status" json:"invoice_status"`
 	UserUsername      pgtype.Text        `db:"user_username" json:"user_username"`
 	UserEmail         string             `db:"user_email" json:"user_email"`
 }
@@ -234,6 +246,8 @@ func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]L
 			&i.FieldLocationLat,
 			&i.FieldLocationLon,
 			&i.FieldPricePerHour,
+			&i.InvoiceID,
+			&i.InvoiceStatus,
 			&i.UserUsername,
 			&i.UserEmail,
 		); err != nil {
@@ -264,11 +278,14 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     u.username AS user_username,
     u.email_enc::text AS user_email
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
 LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.field_id = $1::uuid AND b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT $3 OFFSET $2
@@ -296,6 +313,8 @@ type ListBookingsByFieldRow struct {
 	FieldLocationLat  pgtype.Float8      `db:"field_location_lat" json:"field_location_lat"`
 	FieldLocationLon  pgtype.Float8      `db:"field_location_lon" json:"field_location_lon"`
 	FieldPricePerHour pgtype.Int8        `db:"field_price_per_hour" json:"field_price_per_hour"`
+	InvoiceID         pgtype.UUID        `db:"invoice_id" json:"invoice_id"`
+	InvoiceStatus     pgtype.Text        `db:"invoice_status" json:"invoice_status"`
 	UserUsername      pgtype.Text        `db:"user_username" json:"user_username"`
 	UserEmail         string             `db:"user_email" json:"user_email"`
 }
@@ -325,6 +344,8 @@ func (q *Queries) ListBookingsByField(ctx context.Context, arg ListBookingsByFie
 			&i.FieldLocationLat,
 			&i.FieldLocationLon,
 			&i.FieldPricePerHour,
+			&i.InvoiceID,
+			&i.InvoiceStatus,
 			&i.UserUsername,
 			&i.UserEmail,
 		); err != nil {
@@ -352,10 +373,13 @@ SELECT
     f.location_lat AS field_location_lat,
     f.location_lon AS field_location_lon,
     f.price_per_hour AS field_price_per_hour,
+    i.id AS invoice_id,
+    i.status AS invoice_status,
     b.created_at,
     b.updated_at
 FROM bookings b
 LEFT JOIN fields f ON b.field_id = f.id
+LEFT JOIN payments i ON b.id = i.booking_id
 WHERE b.user_id = $1::uuid AND b.deleted_at IS NULL
 ORDER BY b.created_at DESC
 LIMIT $3 OFFSET $2
@@ -380,6 +404,8 @@ type ListBookingsByUserRow struct {
 	FieldLocationLat  pgtype.Float8      `db:"field_location_lat" json:"field_location_lat"`
 	FieldLocationLon  pgtype.Float8      `db:"field_location_lon" json:"field_location_lon"`
 	FieldPricePerHour pgtype.Int8        `db:"field_price_per_hour" json:"field_price_per_hour"`
+	InvoiceID         pgtype.UUID        `db:"invoice_id" json:"invoice_id"`
+	InvoiceStatus     pgtype.Text        `db:"invoice_status" json:"invoice_status"`
 	CreatedAt         pgtype.Timestamptz `db:"created_at" json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
@@ -406,6 +432,8 @@ func (q *Queries) ListBookingsByUser(ctx context.Context, arg ListBookingsByUser
 			&i.FieldLocationLat,
 			&i.FieldLocationLon,
 			&i.FieldPricePerHour,
+			&i.InvoiceID,
+			&i.InvoiceStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

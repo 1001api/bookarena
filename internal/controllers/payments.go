@@ -187,7 +187,7 @@ func (c *PaymentController) PayDummyPayment(ctx *fiber.Ctx) error {
 		)
 	}
 
-	// Check if payment exists
+	// check if payment exists
 	payment, err := c.paymentSvc.GetPaymentByID(req.InvoiceID)
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(
@@ -200,7 +200,7 @@ func (c *PaymentController) PayDummyPayment(ctx *fiber.Ctx) error {
 		)
 	}
 
-	// If payment is not pending, return error
+	// if payment is not pending, return error
 	if payment.Status != string(pkg.PaymentStatusPending) {
 		return ctx.Status(fiber.StatusNotFound).JSON(
 			fiber.Map{
@@ -212,7 +212,7 @@ func (c *PaymentController) PayDummyPayment(ctx *fiber.Ctx) error {
 		)
 	}
 
-	// Update payment status
+	// update payment status
 	if _, err := c.paymentSvc.UpdatePaymentStatus(db.UpdatePaymentStatusParams{
 		ID:     req.InvoiceID,
 		Status: string(pkg.PaymentStatusPaid),
