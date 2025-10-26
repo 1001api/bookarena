@@ -3,6 +3,7 @@ package bookings
 import (
 	db "1001api/bookarena/internal/database/generated"
 	"1001api/bookarena/internal/modules/fields"
+	"1001api/bookarena/internal/modules/payments"
 	"1001api/bookarena/pkg"
 	"encoding/hex"
 	"errors"
@@ -26,16 +27,22 @@ type BookingService interface {
 }
 
 type service struct {
-	fieldService fields.FieldService
-	repo         BookingRepository
-	encKey       string
+	fieldService   fields.FieldService
+	paymentService payments.PaymentsService
+	repo           BookingRepository
+	encKey         string
 }
 
-func NewBookingService(fieldService fields.FieldService, repo BookingRepository) BookingService {
+func NewBookingService(
+	fieldService fields.FieldService,
+	paymentService payments.PaymentsService,
+	repo BookingRepository,
+) BookingService {
 	return &service{
-		fieldService: fieldService,
-		repo:         repo,
-		encKey:       viper.GetString("ENC_KEY"),
+		fieldService:   fieldService,
+		paymentService: paymentService,
+		repo:           repo,
+		encKey:         viper.GetString("ENC_KEY"),
 	}
 }
 
@@ -84,7 +91,25 @@ func (s *service) CreateBooking(userID uuid.UUID, req CreateBookingRequest) (uui
 		TotalPrice: totalPrice,
 	}
 
-	return s.repo.CreateBooking(input)
+	bookingID, err := s.repo.CreateBooking(input)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	// create payment invoice in background
+	go func() {
+		input := db.CreatePaymentParams{
+			BookingID:  bookingID,
+			UserID:     userID,
+			TotalPrice: totalPrice,
+		}
+
+		if _, err := s.paymentService.CreatePayment(input); err != nil {
+			log.Error().Err(err).Msg("failed to create payment")
+		}
+	}()
+
+	return bookingID, nil
 }
 
 func (s *service) GetBookingByID(id uuid.UUID) (db.GetBookingByIDRow, error) {

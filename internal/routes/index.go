@@ -5,6 +5,7 @@ import (
 	"1001api/bookarena/internal/modules/auth"
 	"1001api/bookarena/internal/modules/bookings"
 	"1001api/bookarena/internal/modules/fields"
+	"1001api/bookarena/internal/modules/payments"
 	"1001api/bookarena/internal/modules/users"
 	"1001api/bookarena/pkg"
 
@@ -27,17 +28,20 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 
 	userRepo := users.NewUserRepository(db)
 	fieldRepo := fields.NewFieldRepository(db)
+	paymentRepo := payments.NewPaymentsRepository(db)
 	bookingRepo := bookings.NewBookingRepository(db)
 
 	userService := users.NewUserService(userRepo, encKey)
 	authService := auth.NewAuthService(userService, encKey)
 	fieldService := fields.NewFieldService(fieldRepo)
-	bookingService := bookings.NewBookingService(fieldService, bookingRepo)
+	paymentService := payments.NewPaymentsService(paymentRepo)
+	bookingService := bookings.NewBookingService(fieldService, paymentService, bookingRepo)
 
 	userController := controllers.NewUserController(userService, validator)
 	authController := controllers.NewAuthController(authService, validator)
 	fieldController := controllers.NewFieldController(fieldService, validator)
 	bookingController := controllers.NewBookingController(bookingService, validator)
+	paymentController := controllers.NewPaymentController(paymentService, validator)
 
 	// Initialize root user
 	if err := userService.InitializeRootUser(); err != nil {
@@ -83,6 +87,17 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 		bookingRoutes.Get("/list", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), bookingController.GetMasterBookings)
 		bookingRoutes.Get("/:id", bookingController.GetBookingByID)
 		bookingRoutes.Delete("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), bookingController.DeleteBooking)
+	}
+
+	paymentRoutes := versioning.Group("/payments", JWTMiddleware(authService))
+	{
+		paymentRoutes.Get("/me", paymentController.GetPaymentsByUser)
+		paymentRoutes.Get("/list", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), paymentController.GetMasterPayments)
+		paymentRoutes.Get("/:id", paymentController.GetPaymentByID)
+		paymentRoutes.Delete("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), paymentController.DeletePayment)
+
+		// DUMMY ENDPOINT TO PAYMENT
+		paymentRoutes.Post("/pay", paymentController.PayDummyPayment)
 	}
 }
 

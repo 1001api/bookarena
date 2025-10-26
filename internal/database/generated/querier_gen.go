@@ -16,12 +16,15 @@ type Querier interface {
 	CheckUserExistsByID(ctx context.Context, id uuid.UUID) (bool, error)
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (uuid.UUID, error)
 	CreateField(ctx context.Context, arg CreateFieldParams) (uuid.UUID, error)
+	CreatePayment(ctx context.Context, arg CreatePaymentParams) (uuid.UUID, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error)
 	DeleteBooking(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteField(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	DeletePayment(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	GetBookingByID(ctx context.Context, id uuid.UUID) (GetBookingByIDRow, error)
 	GetFieldByID(ctx context.Context, id uuid.UUID) (GetFieldByIDRow, error)
+	GetPaymentByID(ctx context.Context, id uuid.UUID) (GetPaymentByIDRow, error)
 	GetUserByEmail(ctx context.Context, emailHash string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByIdentifier(ctx context.Context, arg GetUserByIdentifierParams) (GetUserByIdentifierRow, error)
@@ -31,12 +34,15 @@ type Querier interface {
 	ListBookingsByField(ctx context.Context, arg ListBookingsByFieldParams) ([]ListBookingsByFieldRow, error)
 	ListBookingsByUser(ctx context.Context, arg ListBookingsByUserParams) ([]ListBookingsByUserRow, error)
 	ListFields(ctx context.Context, arg ListFieldsParams) ([]ListFieldsRow, error)
+	ListPaymentsForAdmin(ctx context.Context, arg ListPaymentsForAdminParams) ([]ListPaymentsForAdminRow, error)
+	ListPaymentsForUser(ctx context.Context, arg ListPaymentsForUserParams) ([]ListPaymentsForUserRow, error)
 	LockUser(ctx context.Context, arg LockUserParams) error
 	ResetFailedLoginCount(ctx context.Context, id uuid.UUID) error
 	RestoreUser(ctx context.Context, id uuid.UUID) error
 	SearchUser(ctx context.Context, arg SearchUserParams) ([]SearchUserRow, error)
 	UpdateField(ctx context.Context, arg UpdateFieldParams) (uuid.UUID, error)
 	UpdateLastLogin(ctx context.Context, id uuid.UUID) error
+	UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStatusParams) (uuid.UUID, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

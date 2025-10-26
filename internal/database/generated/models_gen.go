@@ -39,12 +39,14 @@ type Field struct {
 }
 
 type Payment struct {
-	ID        uuid.UUID          `db:"id" json:"id"`
-	BookingID uuid.UUID          `db:"booking_id" json:"booking_id"`
-	Amount    int64              `db:"amount" json:"amount"`
-	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	ID         uuid.UUID          `db:"id" json:"id"`
+	BookingID  uuid.UUID          `db:"booking_id" json:"booking_id"`
+	UserID     uuid.UUID          `db:"user_id" json:"user_id"`
+	TotalPrice int64              `db:"total_price" json:"total_price"`
+	Status     string             `db:"status" json:"status"`
+	CreatedAt  pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
 type User struct {
