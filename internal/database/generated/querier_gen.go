@@ -13,17 +13,22 @@ import (
 type Querier interface {
 	CheckUserExists(ctx context.Context, arg CheckUserExistsParams) (bool, error)
 	CheckUserExistsByID(ctx context.Context, id uuid.UUID) (bool, error)
+	CreateField(ctx context.Context, arg CreateFieldParams) (uuid.UUID, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error)
+	DeleteField(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	GetFieldByID(ctx context.Context, id uuid.UUID) (GetFieldByIDRow, error)
 	GetUserByEmail(ctx context.Context, emailHash string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserByIdentifier(ctx context.Context, arg GetUserByIdentifierParams) (GetUserByIdentifierRow, error)
 	GetUsers(ctx context.Context, arg GetUsersParams) ([]GetUsersRow, error)
 	IncrementFailedLoginCount(ctx context.Context, id uuid.UUID) error
+	ListFields(ctx context.Context, arg ListFieldsParams) ([]ListFieldsRow, error)
 	LockUser(ctx context.Context, arg LockUserParams) error
 	ResetFailedLoginCount(ctx context.Context, id uuid.UUID) error
 	RestoreUser(ctx context.Context, id uuid.UUID) error
 	SearchUser(ctx context.Context, arg SearchUserParams) ([]SearchUserRow, error)
+	UpdateField(ctx context.Context, arg UpdateFieldParams) (uuid.UUID, error)
 	UpdateLastLogin(ctx context.Context, id uuid.UUID) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }

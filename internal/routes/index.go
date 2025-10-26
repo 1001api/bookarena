@@ -3,6 +3,7 @@ package routes
 import (
 	"1001api/bookarena/internal/controllers"
 	"1001api/bookarena/internal/modules/auth"
+	"1001api/bookarena/internal/modules/fields"
 	"1001api/bookarena/internal/modules/users"
 	"1001api/bookarena/pkg"
 
@@ -24,12 +25,15 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 	validator := validator.New()
 
 	userRepo := users.NewUserRepository(db)
+	fieldRepo := fields.NewFieldRepository(db)
 
 	userService := users.NewUserService(userRepo, encKey)
 	authService := auth.NewAuthService(userService, encKey)
+	fieldService := fields.NewFieldService(fieldRepo)
 
 	userController := controllers.NewUserController(userService, validator)
 	authController := controllers.NewAuthController(authService, validator)
+	fieldController := controllers.NewFieldController(fieldService, validator)
 
 	// Initialize root user
 	if err := userService.InitializeRootUser(); err != nil {
@@ -56,6 +60,15 @@ func Routing(r fiber.Router, db *pgxpool.Pool) {
 		userRoutes.Get("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), userController.GetUserByID)
 		userRoutes.Patch("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), userController.UpdateUser)
 		userRoutes.Delete("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), userController.DeleteUser)
+	}
+
+	fieldRoutes := versioning.Group("/fields", JWTMiddleware(authService))
+	{
+		fieldRoutes.Post("/create", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), fieldController.CreateField)
+		fieldRoutes.Get("/list", fieldController.GetMasterFields)
+		fieldRoutes.Get("/:id", fieldController.GetFieldByID)
+		fieldRoutes.Patch("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), fieldController.UpdateField)
+		fieldRoutes.Delete("/:id", RoleMiddleware(string(pkg.RoleAdmin), string(pkg.RoleSuperAdmin)), fieldController.DeleteField)
 	}
 }
 

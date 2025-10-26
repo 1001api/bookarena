@@ -5,9 +5,46 @@
 package db
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Booking struct {
+	ID        uuid.UUID          `db:"id" json:"id"`
+	UserID    uuid.UUID          `db:"user_id" json:"user_id"`
+	FieldID   uuid.UUID          `db:"field_id" json:"field_id"`
+	StartTime time.Time          `db:"start_time" json:"start_time"`
+	EndTime   time.Time          `db:"end_time" json:"end_time"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+}
+
+type Field struct {
+	ID           uuid.UUID          `db:"id" json:"id"`
+	ImageUrl     pgtype.Text        `db:"image_url" json:"image_url"`
+	Name         string             `db:"name" json:"name"`
+	Type         string             `db:"type" json:"type"`
+	Description  pgtype.Text        `db:"description" json:"description"`
+	Location     pgtype.Text        `db:"location" json:"location"`
+	LocationLat  pgtype.Float8      `db:"location_lat" json:"location_lat"`
+	LocationLon  pgtype.Float8      `db:"location_lon" json:"location_lon"`
+	PricePerHour int64              `db:"price_per_hour" json:"price_per_hour"`
+	CreatedAt    pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt    pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+}
+
+type Payment struct {
+	ID        uuid.UUID          `db:"id" json:"id"`
+	BookingID uuid.UUID          `db:"booking_id" json:"booking_id"`
+	Amount    int64              `db:"amount" json:"amount"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+}
 
 type User struct {
 	ID                  uuid.UUID          `db:"id" json:"id"`
